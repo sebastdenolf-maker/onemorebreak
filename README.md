@@ -33,14 +33,24 @@ De lidmaatschapsaanvraag is onderdeel van de ervaring: iedereen wordt geacceptee
 
 ## Opbouw van de code
 
-Op dit moment bevat `index.html` de volledige website:
+De website is verdeeld over deze bestanden:
 
-- **HTML**: de schermen, teksten, knoppen en formulieren.
-- **CSS**: kleuren, kaders, animaties en aanpassingen voor mobiele schermen.
-- **JavaScript**: navigatie, tellers, timers, lidmaatschap en beloningen.
-- **Media**: twee video's en een audiobestand, als ingesloten gegevens in de HTML.
+| Bestand of map | Inhoud |
+| --- | --- |
+| `index.html` | De schermen, teksten, knoppen en formulieren. |
+| `assets/css/styles.css` | Kleuren, kaders, animaties en aanpassingen voor mobiele schermen. |
+| `assets/js/navigation.js` | Hoofdschermen, productiviteitsvraag en lidmaatschapsaanvraag. |
+| `assets/js/activities.js` | Openen en sluiten van activiteiten, typing, de pauzetimer en het ontgrendelen van ledenactiviteiten. |
+| `assets/js/swiping.js`, `clicking.js` | De swipe- en klikactiviteiten. |
+| `assets/js/activity-intro.js` | De introductieberichten voor openbare activiteiten. |
+| `assets/js/daydreaming.js`, `bob-ross.js` | Starten en stoppen van de ledenvideo's en bijbehorende audio. |
+| `assets/js/encouragement.js`, `daydream-reward.js` | Tussentijdse berichten en de Daydreaming-beloning. |
+| `assets/js/enter.js`, `membership-init.js` | Bediening van de ENTER-knop en de beginstatus van ledenknoppen. |
+| `assets/media/` | Twee MP4-video's en één MP3-audiobestand. |
 
-Het bestand is ongeveer 42,8 MB groot. Vrijwel alle omvang komt van de ingesloten media. De functie `go(n)` toont een hoofdscherm; de activiteiten gebruiken aparte schermen die over het menu verschijnen.
+De functie `go(n)` toont een hoofdscherm; de activiteiten gebruiken aparte schermen die over het menu verschijnen. De scripts worden op dezelfde plaatsen en in dezelfde volgorde geladen als in het oorspronkelijke prototype, zodat het bestaande gedrag behouden blijft.
+
+De HTML bevat geen ingesloten media meer. Video en audio staan als gewone bestanden in `assets/media/`. De media gebruiken voorlopig nog `preload="auto"`; verdere optimalisatie van het laden is een aparte verbetering. Publiceer altijd de volledige projectmap, inclusief `assets/`.
 
 ## Bekende beperkingen
 
