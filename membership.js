@@ -151,7 +151,7 @@
       }
     });
     const config = window.OMB_MEMBERSHIP;
-    if (!config?.supabaseUrl || !config?.publishableKey) {
+    if (config?.registrationEnabled === false || !config?.supabaseUrl || !config?.publishableKey) {
       message('Membership registration is not open yet. Please come back soon.');
       return;
     }
