@@ -230,9 +230,10 @@ button{cursor:pointer}
     .swipe-photo{
       width:100%;
       height:100%;
-      object-fit:cover;
+      object-fit:contain;
       display:block;
       image-rendering:auto;
+      background:#050505;
     }
     .swipe-placeholder{
       width:100%;
@@ -1061,11 +1062,11 @@ setProgress(1)
   <div class="activity-inner">
     <div id="swipeShell" class="swipe-shell">
       <div id="swipeCard" class="swipe-card" style="padding:0">
-        <div id="swipeVisual" class="swipe-placeholder">YOUR DOING-NOTHING PHOTO GOES HERE.</div>
+        <img id="swipeVisual" class="swipe-photo" src="assets/media/swiping/cover.jpg" alt="ONEMOREBREAK cover art — BLACKSTAR taking a break in a room full of himself." width="1080" height="1080" decoding="async" draggable="false" />
       </div>
     </div>
     <div id="swipeCounter" class="typing-count">0/10</div>
-    <button class="swipe-button" type="button" onclick="nextSwipe()">↑</button>
+    <button class="swipe-button" type="button" onclick="nextSwipe()" aria-label="Next photo">↑</button>
     <div id="swipeReaction" class="typing-react"></div>
     <div id="swipeReward" class="reward-overlay">
       <div class="reward-box">
@@ -1242,17 +1243,23 @@ setProgress(1)
 <script>
 (function(){
   const swipeContent = [
-    "PHOTO 01 — DOING NOTHING.",
-    "PHOTO 02 — STILL DOING NOTHING.",
-    "PHOTO 03 — ADVANCED INACTIVITY.",
-    "PHOTO 04 — NO VISIBLE PROGRESS.",
-    "PHOTO 05 — NOTHING CONTINUES.",
-    "PHOTO 06 — PROFESSIONAL BREAK.",
-    "PHOTO 07 — ZERO URGENCY.",
-    "PHOTO 08 — PRODUCTIVITY NOT FOUND.",
-    "PHOTO 09 — ALMOST IMPRESSIVE.",
-    "PHOTO 10 — ENOUGH NOTHING."
+    {src:"cover.jpg", alt:"ONEMOREBREAK cover art — BLACKSTAR taking a break in a room full of himself."},
+    {src:"phone.jpg", alt:"BLACKSTAR lounging with sunglasses, a book and a telephone."},
+    {src:"nintendo.jpg", alt:"BLACKSTAR taking a Nintendo DS break on the sofa."},
+    {src:"tennis.jpg", alt:"BLACKSTAR tossing a tennis ball into the air."},
+    {src:"sleep.jpg", alt:"BLACKSTAR reaching for the alarm clock from bed."},
+    {src:"controller.jpg", alt:"BLACKSTAR wearing sunglasses and playing with a game controller."},
+    {src:"keyboard.jpg", alt:"BLACKSTAR playing a computer keyboard like a guitar."},
+    {src:"bathroom.jpg", alt:"BLACKSTAR resting his head on his knees during a bathroom break."},
+    {src:"wii.jpg", alt:"BLACKSTAR aiming a Wii remote across the room."},
+    {src:"tape.jpg", alt:"BLACKSTAR stretching a bright orange roll of tape."}
   ];
+  const photoPath = "assets/media/swiping/";
+  function preloadPhoto(index){
+    const photo = new Image();
+    photo.src = photoPath + swipeContent[index % swipeContent.length].src;
+  }
+  preloadPhoto(1);
   const reactions = {
     1:"THAT COUNTED AS A SWIPE.",
     2:"PRODUCTIVITY REMAINS LOW.",
@@ -1268,16 +1275,22 @@ setProgress(1)
 
   let swipeCount = 0;
   let touchStartY = null;
+  let swipeBusy = false;
 
   window.nextSwipe = function(){
     const card = document.getElementById("swipeCard");
-    if(!card) return;
+    if(!card || swipeBusy) return;
+    swipeBusy = true;
     card.classList.add("out");
     setTimeout(()=>{
       swipeCount++;
       const item = swipeContent[swipeCount % swipeContent.length];
       const visual = document.getElementById("swipeVisual");
-      if(visual) visual.textContent = item;
+      if(visual){
+        visual.src = photoPath + item.src;
+        visual.alt = item.alt;
+      }
+      preloadPhoto(swipeCount + 1);
       document.getElementById("swipeCounter").textContent =
         swipeCount + "/10";
       document.getElementById("swipeReaction").textContent =
@@ -1297,6 +1310,7 @@ setProgress(1)
         card.style.transition = "transform .22s ease, opacity .22s ease";
         card.style.transform = "translateY(0)";
         card.style.opacity = "1";
+        swipeBusy = false;
       }));
     },220);
   };
