@@ -24,6 +24,11 @@ async function boot({ configured = true, user = null, row = null, sendError = nu
       getUser: async () => ({ data: { user }, error: null }),
       onAuthStateChange: () => {},
       signInWithOtp: async input => { sent = input; return { error: sendError }; },
+      verifyOtp: async input => {
+        if (input.token !== '123456') return { error: new Error('Invalid code') };
+        user = { user_metadata: {} };
+        return { error: null };
+      },
       signOut: async () => ({ error: null })
     },
     rpc: async () => { claimed++; return { data: row ? [row] : [], error: null }; }
@@ -76,7 +81,8 @@ test('sending a link does not invent a membership; repeat request is throttled',
   app.get('memberEmail').value = 'member@example.org';
   await app.get('membershipForm').listeners.submit({ preventDefault() {} });
   assert.equal(app.sent().email, 'member@example.org');
-  assert.equal(app.sent().options.emailRedirectTo, 'https://example.org/index.html?membership=confirmed');
+  assert.equal(app.get('membershipVerifyForm').hidden, false);
+  assert.equal(app.get('memberEmail').readOnly, true);
   assert.equal(app.unlocked(), false);
   assert.match(app.get('membershipStatus').textContent, /CHECK YOUR EMAIL/);
   await app.get('membershipForm').listeners.submit({ preventDefault() {} });
@@ -93,4 +99,19 @@ test('missing setup and email delivery errors never show success', async () => {
   assert.match(failed.get('membershipStatus').textContent, /could not be sent/);
   assert.equal(failed.get('membershipSubmit').disabled, false);
   assert.equal(failed.unlocked(), false);
+});
+
+
+test('an incorrect email code cannot unlock access, a correct code restores the stored member number', async () => {
+  const app = await boot({ row: { member_number: 100000, active: true } });
+  app.get('memberEmail').value = 'member@example.org';
+  await app.get('membershipForm').listeners.submit({ preventDefault() {} });
+  app.get('membershipCode').value = '999999';
+  await app.get('membershipVerifyForm').listeners.submit({ preventDefault() {} });
+  assert.equal(app.unlocked(), false);
+  assert.match(app.get('membershipStatus').textContent, /invalid or expired/);
+  app.get('membershipCode').value = '123456';
+  await app.get('membershipVerifyForm').listeners.submit({ preventDefault() {} });
+  assert.equal(app.unlocked(), true);
+  assert.equal(app.get('memberNumber').textContent, 100000);
 });

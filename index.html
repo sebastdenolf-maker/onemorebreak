@@ -912,9 +912,13 @@ button{cursor:pointer}
     <form id="membershipForm" class="form membership-form">
       <label>YOUR NAME (OPTIONAL)<input id="memberName" name="display_name" autocomplete="nickname" maxlength="80" /></label>
       <label>YOUR EMAIL<input id="memberEmail" name="email" type="email" autocomplete="email" required maxlength="254" /></label>
-      <p class="membership-note">We’ll email you a link to confirm your address. No password. Already a member? Use the same email to get your number and access back.</p>
+      <p class="membership-note">We’ll email you a verification code. No password. Already a member? Use the same email to get your number and access back.</p>
       <p class="membership-note">Your email and member number are stored by Sebast Denolf using Supabase to manage membership and send access links. This does not subscribe you to marketing emails. <a href="mailto:sebast.denolf@gmail.com">Contact Sebast</a> to request deletion.</p>
-      <div class="actions"><button id="membershipSubmit" class="pixel-btn primary" type="submit"><span class="heart">♥</span>SEND MY ACCESS LINK</button><button class="pixel-btn" type="button" onclick="go(8)">GO BACK</button></div>
+      <div class="actions"><button id="membershipSubmit" class="pixel-btn primary" type="submit"><span class="heart">♥</span>SEND MY ACCESS CODE</button><button class="pixel-btn" type="button" onclick="go(8)">GO BACK</button></div>
+    </form>
+    <form id="membershipVerifyForm" class="form membership-form" hidden>
+      <label>CODE FROM YOUR EMAIL<input id="membershipCode" name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6,10}" minlength="6" maxlength="10" required /></label>
+      <div class="actions"><button id="membershipVerify" class="pixel-btn primary" type="submit">CONFIRM MY MEMBERSHIP</button><button id="membershipChangeEmail" class="pixel-btn" type="button">USE ANOTHER EMAIL</button></div>
     </form>
     <p id="membershipStatus" class="membership-status" role="status" aria-live="polite"></p>
   </div></div>
@@ -1820,7 +1824,7 @@ document.addEventListener("DOMContentLoaded", function(){
     <div class="actions"><button class="pixel-btn" type="button" onclick="go(8)">RETURN TO BREAK</button><button id="retryMemberPosts" class="pixel-btn" type="button">REFRESH UPDATES</button></div>
   </div></div>
 </section>
-<script src="membership-config.js?v=20261114-live"></script>
-<script src="membership.js?v=20261114-live"></script>
+<script src="membership-config.js?v=20261114-code"></script>
+<script src="membership.js?v=20261114-code"></script>
 </body>
 </html>

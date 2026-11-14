@@ -6,6 +6,8 @@
   let revision = 0;
   let busy = false;
   let resendAfter = 0;
+  let pendingEmail = null;
+  let showWelcome = false;
 
   function message(text, error = false) {
     byId('membershipStatus').textContent = text;
@@ -53,7 +55,8 @@
       byId('memberAction').hidden = true;
       byId('memberTools').hidden = false;
       window.unlockMemberActivities();
-      if (new URLSearchParams(location.search).has('membership')) {
+      if (showWelcome || new URLSearchParams(location.search).has('membership')) {
+        showWelcome = false;
         history.replaceState(null, '', location.pathname);
         window.go(12);
       }
@@ -85,27 +88,52 @@
     }
     busy = true;
     byId('membershipSubmit').disabled = true;
-    message('SENDING YOUR ACCESS LINK…');
+    message('SENDING YOUR ACCESS CODE…');
     try {
       const email = byId('memberEmail').value.trim();
-      const redirect = new URL(window.OMB_MEMBERSHIP.siteUrl || location.pathname, location.origin);
-      redirect.searchParams.set('membership', 'confirmed');
       const { error } = await client.auth.signInWithOtp({
         email,
         options: {
-          emailRedirectTo: redirect.href,
           shouldCreateUser: true,
           data: { display_name: byId('memberName').value.trim() }
         }
       });
       if (error) throw error;
       resendAfter = Date.now() + 60000;
-      message('CHECK YOUR EMAIL. Open the access link to confirm your address and get your member number. Check spam too. Already a member? The link restores your existing membership.');
+      pendingEmail = email;
+      byId('membershipVerifyForm').hidden = false;
+      byId('memberEmail').readOnly = true;
+      message('CHECK YOUR EMAIL. Enter the verification code below to get your member number and access. Check spam too.');
     } catch {
       message('The email could not be sent. Please try again in a minute. If it keeps failing, contact Sebast.', true);
     } finally {
       busy = false;
       byId('membershipSubmit').disabled = false;
+    }
+  }
+
+  async function verify(event) {
+    event.preventDefault();
+    if (busy || !client || !pendingEmail || !byId('membershipVerifyForm').reportValidity()) return;
+    busy = true;
+    showWelcome = true;
+    byId('membershipVerify').disabled = true;
+    message('CHECKING YOUR CODE…');
+    try {
+      const { error } = await client.auth.verifyOtp({
+        email: pendingEmail,
+        token: byId('membershipCode').value.trim(),
+        type: 'email'
+      });
+      if (error) throw error;
+      byId('membershipCode').value = '';
+      await restore();
+    } catch {
+      showWelcome = false;
+      message('That code is invalid or expired. Check the latest email, or request a new code.', true);
+    } finally {
+      busy = false;
+      byId('membershipVerify').disabled = false;
     }
   }
 
@@ -139,6 +167,14 @@
   async function init() {
     lock();
     byId('membershipForm').addEventListener('submit', apply);
+    byId('membershipVerifyForm').addEventListener('submit', verify);
+    byId('membershipChangeEmail').addEventListener('click', () => {
+      pendingEmail = null;
+      byId('membershipVerifyForm').hidden = true;
+      byId('memberEmail').readOnly = false;
+      byId('membershipCode').value = '';
+      message('Enter your email and request a new code.');
+    });
     byId('viewMemberInfo').addEventListener('click', window.openMembership);
     byId('retryMemberPosts').addEventListener('click', loadPosts);
     byId('membershipSignOut').addEventListener('click', async () => {
@@ -154,7 +190,7 @@
     if (callback.has('error')) {
       history.replaceState(null, '', location.pathname);
       window.go(10);
-      message('This access link has expired or was already used. Request a new one below.', true);
+      message('This access link has expired or was already used. Request a verification code below.', true);
     }
     const config = window.OMB_MEMBERSHIP;
     if (!config?.supabaseUrl || !config?.publishableKey) {
