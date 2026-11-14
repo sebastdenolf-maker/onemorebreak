@@ -1,0 +1,13 @@
+.membership-form label:not(.check){display:grid;gap:8px;font-size:.85rem;font-weight:bold}
+.membership-form input[type="checkbox"]{width:auto;flex:0 0 auto;accent-color:var(--red);margin:3px 0}
+.membership-form input:focus-visible{outline:3px solid var(--yellow);outline-offset:3px}
+.membership-form button:disabled{opacity:.55;cursor:wait}
+.membership-note{font-size:.82rem!important;line-height:1.5!important;max-width:58ch}
+.membership-note a{color:inherit;text-underline-offset:3px}
+.membership-status{min-height:1.5em;font-size:.9rem!important;margin-top:16px!important;overflow-wrap:anywhere}
+.membership-status[data-error="true"]{color:#ff9e9e}
+.membership-post{border-top:2px solid currentColor;padding:22px 0;text-align:left}
+.membership-post h3{font-size:1.2rem;margin:0 0 12px}
+.membership-post p{white-space:pre-wrap;overflow-wrap:anywhere;font-size:1rem}
+.member-tools{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px}
+[hidden]{display:none!important}
