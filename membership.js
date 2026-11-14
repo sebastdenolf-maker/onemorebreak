@@ -75,7 +75,7 @@
   async function apply(event) {
     event.preventDefault();
     if (busy || !byId('membershipForm').reportValidity()) return;
-    if (!client) {
+    if (!client || window.OMB_MEMBERSHIP?.registrationEnabled === false) {
       message('Membership registration is not open yet. Please come back soon.', true);
       return;
     }
@@ -88,7 +88,7 @@
     message('SENDING YOUR ACCESS LINK…');
     try {
       const email = byId('memberEmail').value.trim();
-      const redirect = new URL(location.pathname, location.origin);
+      const redirect = new URL(window.OMB_MEMBERSHIP.siteUrl || location.pathname, location.origin);
       redirect.searchParams.set('membership', 'confirmed');
       const { error } = await client.auth.signInWithOtp({
         email,
@@ -151,10 +151,11 @@
       }
     });
     const config = window.OMB_MEMBERSHIP;
-    if (config?.registrationEnabled === false || !config?.supabaseUrl || !config?.publishableKey) {
+    if (!config?.supabaseUrl || !config?.publishableKey) {
       message('Membership registration is not open yet. Please come back soon.');
       return;
     }
+    if (config.registrationEnabled === false) message('Membership registration is not open yet. Please come back soon.');
     try {
       const sdk = await import('https://esm.sh/@supabase/supabase-js@2.49.8');
       client = sdk.createClient(config.supabaseUrl, config.publishableKey, {
