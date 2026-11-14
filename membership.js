@@ -150,6 +150,12 @@
         if (error) { window.go(10); message('Could not sign out completely. Please try again.', true); }
       }
     });
+    const callback = new URLSearchParams(location.hash?.slice(1) || '');
+    if (callback.has('error')) {
+      history.replaceState(null, '', location.pathname);
+      window.go(10);
+      message('This access link has expired or was already used. Request a new one below.', true);
+    }
     const config = window.OMB_MEMBERSHIP;
     if (!config?.supabaseUrl || !config?.publishableKey) {
       message('Membership registration is not open yet. Please come back soon.');
