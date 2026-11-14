@@ -1,0 +1,48 @@
+name: Membership database check
+
+on:
+  schedule:
+    - cron: '17 6,18 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: membership-database-check
+  cancel-in-progress: false
+
+jobs:
+  database-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    env:
+      # Browser-safe project identifiers. These grant no access to member emails.
+      SUPABASE_URL: https://enyomwgfefynohudmjdt.supabase.co
+      SUPABASE_PUBLIC_KEY: sb_publishable_T4LJ18T5DR6C_xL4UZe5fQ_AeGl58w8
+    steps:
+      - name: Query the public health row without reading any member data
+        shell: python
+        run: |
+          import json, os, sys, time, urllib.request
+          from urllib.parse import urlparse
+          base = os.environ.get('SUPABASE_URL', '').rstrip('/')
+          key = os.environ.get('SUPABASE_PUBLIC_KEY', '')
+          parsed = urlparse(base)
+          if parsed.scheme != 'https' or not parsed.hostname or not parsed.hostname.endswith('.supabase.co') or not key:
+              sys.exit('Set OMB_SUPABASE_URL and OMB_SUPABASE_PUBLIC_KEY in GitHub Actions settings first.')
+          request = urllib.request.Request(
+              base + '/rest/v1/omb_health?select=status&id=eq.1',
+              headers={'apikey': key})
+          for attempt in range(3):
+              try:
+                  with urllib.request.urlopen(request, timeout=25) as response:
+                      result = json.load(response)
+                  if result != [{'status': 'ok'}]:
+                      raise ValueError('Unexpected health response')
+                  print('Membership database responded successfully. No member data was accessed.')
+                  break
+              except Exception:
+                  if attempt == 2:
+                      sys.exit('Database check failed. Check project status and configuration in Supabase. This check does not resume a paused project.')
+                  time.sleep(10)
