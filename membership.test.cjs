@@ -20,6 +20,7 @@ async function boot({ configured = true, user = null, row = null, sendError = nu
   let sent = null;
   let claimed = 0;
   const client = {
+    functions: { invoke: async () => ({ error: null }) },
     auth: {
       getUser: async () => ({ data: { user }, error: null }),
       onAuthStateChange: () => {},

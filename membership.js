@@ -8,6 +8,7 @@
   let resendAfter = 0;
   let pendingEmail = null;
   let showWelcome = false;
+  const welcomeChecked = new Set();
 
   function message(text, error = false) {
     byId('membershipStatus').textContent = text;
@@ -55,6 +56,13 @@
       byId('memberAction').hidden = true;
       byId('memberTools').hidden = false;
       window.unlockMemberActivities();
+      if (!welcomeChecked.has(user.id)) {
+        welcomeChecked.add(user.id);
+        // Sending failure must never block membership access.
+        client.functions.invoke('welcome-member', { body: {} })
+          .then(({ error }) => { if (error) welcomeChecked.delete(user.id); })
+          .catch(() => { welcomeChecked.delete(user.id); });
+      }
       if (showWelcome || new URLSearchParams(location.search).has('membership')) {
         showWelcome = false;
         history.replaceState(null, '', location.pathname);
